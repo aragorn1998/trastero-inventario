@@ -115,36 +115,39 @@
         </button>
       </div>
 
-      <form id="itemForm" novalidate>
+      <form id="itemForm" novalidate class="form-grid">
         <input type="hidden" id="itemId" />
 
-        <label for="nameInput">
+        <label for="nameInput" class="half-field">
           Nombre
           <input id="nameInput" name="name" required maxlength="120" />
         </label>
 
-        <label for="categoryInput">
+        <label for="categoryInput" class="half-field">
           Categoría
           <input id="categoryInput" name="category" required maxlength="80" />
         </label>
 
-        <label for="locationInput">
+        <label for="locationInput" class="half-field">
           Ubicación
           <input id="locationInput" name="location" required maxlength="120" />
         </label>
 
-        <label for="imageInput">
-          Imagen del producto
+        <div class="image-field">
+          <div class="image-field-header">
+            <label for="imageInput">Imagen del producto</label>
+            <span class="field-help">Opcional. Elige un archivo o usa la cámara.</span>
+          </div>
           <input id="imageInput" name="imageInput" type="file" accept="image/*" capture="environment" />
-        </label>
-        <input type="hidden" id="imageData" name="imageData" />
+          <input type="hidden" id="imageData" name="imageData" />
 
-        <div id="imagePreviewWrapper" class="image-preview-wrapper hidden">
-          <img id="imagePreview" class="image-preview" alt="Vista previa de imagen del producto" />
-          <button id="clearImageBtn" type="button" class="clear-btn" aria-label="Eliminar imagen">✕</button>
+          <div id="imagePreviewWrapper" class="image-preview-wrapper hidden">
+            <img id="imagePreview" class="image-preview" alt="Vista previa de imagen del producto" />
+            <button id="clearImageBtn" type="button" class="clear-btn" aria-label="Eliminar imagen">✕</button>
+          </div>
         </div>
 
-        <label for="notesInput">
+        <label for="notesInput" class="notes-field">
           Notas
           <textarea id="notesInput" name="notes" rows="4" maxlength="1000"></textarea>
         </label>
