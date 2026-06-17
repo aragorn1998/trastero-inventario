@@ -307,17 +307,21 @@ function renderItems() {
     const article = document.createElement('article');
     article.className = 'item-card';
 
+    const imageHtml = item.imageData ? '<div class="item-image-container"><img class="item-image" src="' + item.imageData + '" alt="Imagen de ' + escapeHtml(item.name || 'objeto') + '" /></div>' : '';
+
     article.innerHTML =
-      '<div class="item-header">' +
-        '<div>' +
-          '<h3 class="item-title"></h3>' +
-          '<span class="item-category"></span>' +
+      imageHtml +
+      '<div class="item-content">' +
+        '<div class="item-header">' +
+          '<div>' +
+            '<h3 class="item-title"></h3>' +
+            '<span class="item-category"></span>' +
+          '</div>' +
         '</div>' +
-      '</div>' +
-      (item.imageData ? '<div class="item-image-container"><img class="item-image" src="' + item.imageData + '" alt="Imagen de ' + escapeHtml(item.name || 'objeto') + '" /></div>' : '') +
-      '<p class="item-location"></p>' +
-      '<p class="item-notes"></p>' +
-      '<div class="item-actions"></div>';
+        '<p class="item-location"></p>' +
+        '<p class="item-notes"></p>' +
+        '<div class="item-actions"></div>' +
+      '</div>';
 
     article.querySelector('.item-title').textContent = item.name || '';
     article.querySelector('.item-category').textContent = item.category || '';

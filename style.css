@@ -153,11 +153,65 @@ input::placeholder {
 }
 
 .item-card {
-  padding: 16px;
-  border-radius: 22px;
+  padding: 12px;
+  border-radius: 18px;
   background: linear-gradient(180deg, rgba(22, 33, 54, 0.98), rgba(15, 24, 39, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: var(--shadow);
+  display: flex;
+  gap: 12px;
+}
+
+.item-image-container {
+  overflow: hidden;
+  border-radius: 12px;
+  width: 70px;
+  height: 70px;
+  background: rgba(255,255,255,0.04);
+  flex-shrink: 0;
+}
+
+.item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.image-preview-wrapper {
+  position: relative;
+  margin: 12px 0 0;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: rgba(255,255,255,0.04);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.image-preview-wrapper img.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+#clearImageBtn {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 2;
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
 }
 
 .item-header {
@@ -169,26 +223,28 @@ input::placeholder {
 
 .item-title {
   margin: 0;
-  font-size: 1.06rem;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .item-category {
   display: inline-flex;
-  margin-top: 8px;
-  padding: 6px 10px;
+  margin-top: 4px;
+  padding: 4px 8px;
   border-radius: 999px;
   background: rgba(110, 168, 254, 0.14);
   color: #d8e7ff;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
 }
 
 .item-location,
 .item-notes {
-  margin: 14px 0 0;
+  margin: 0;
   color: var(--muted);
-  line-height: 1.45;
+  line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-word;
+  font-size: 0.92rem;
 }
 
 .item-actions {
@@ -262,6 +318,18 @@ input::placeholder {
   padding: 16px;
 }
 
+.modal-card {
+  position: relative;
+  width: min(100%, 720px);
+  max-height: min(90vh, 820px);
+  overflow: auto;
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(6, 17, 29, 0.96);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.4);
+}
+
 .modal-backdrop {
   position: absolute;
   inset: 0;
@@ -293,9 +361,7 @@ input::placeholder {
 
 .form-grid {
   display: grid;
-  gap: 14px;
-}
-
+    gap: 16px;
 .form-grid label {
   display: grid;
   gap: 8px;
@@ -360,12 +426,20 @@ body.modal-open {
 /* Centrar la cabecera, toolbar y el contenido principal */
 .page-header,
 .toolbar,
-main#mainContent,
-#cardsContainer {
+main#mainContent {
   max-width: 920px;
   margin-left: auto;
   margin-right: auto;
   padding: 12px 16px;
+}
+
+#cardsContainer {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  padding: 8px 16px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .page-header {
@@ -420,7 +494,7 @@ select {
 }
 
 /* Ajustes para que los desplegables no aparezcan blancos al abrirse */
-select, input[list] {
+select, input[list], input[type="file"] {
   -webkit-appearance: none;
   appearance: none;
   background-color: rgba(255,255,255,0.03);
@@ -458,6 +532,7 @@ body.can-edit .logo-bg { fill: #3ddc97; }
   place-items: center;
   background: rgba(255,255,255,0.03);
   color: var(--text);
+  font-size: 0.95rem;
 }
 
 body.can-edit #tokenBtn {
@@ -492,10 +567,60 @@ body.read-only #tokenBtn {
 }
 
 /* Mejora de foco para selects/inputs */
-select:focus, #categoryFilter:focus {
+select:focus, #categoryFilter:focus, input[type="file"]:focus, textarea:focus {
   outline: none;
   border-color: rgba(110,168,254,0.85);
   box-shadow: 0 0 0 4px rgba(110,168,254,0.08);
+}
+
+.form-grid {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 720px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .form-grid label,
+  .image-field,
+  .notes-field {
+    grid-column: span 2;
+  }
+
+  .form-grid label.half-field {
+    grid-column: span 1;
+  }
+}
+
+.image-field {
+  display: grid;
+  gap: 10px;
+}
+
+.image-field-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.image-field input[type="file"] {
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.image-field .field-help {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.image-field-header .field-help {
+  font-size: 0.88rem;
+  color: var(--muted);
 }
 
 /* Toolbar más clara y centrada */
@@ -505,19 +630,6 @@ select:focus, #categoryFilter:focus {
   align-items: center;
   gap: 12px;
   justify-content: space-between;
-}
-
-/* Contenedor de tarjetas en 2 columnas responsivas */
-#cardsContainer {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  padding: 8px 0;
-}
-
-/* Asegurar estilo de las tarjetas generadas dinámicamente */
-.item-card {
-  padding: 20px;
 }
 
 /* Estilo para el botón añadir (si no tiene clase .fab) */
@@ -539,10 +651,14 @@ select:focus, #categoryFilter:focus {
 }
 
 @media (max-width: 520px) {
-  .page-header,
-  .toolbar,
-  main#mainContent {
-    padding-left: 14px;
-    padding-right: 14px;
+  .item-card {
+    flex-direction: column;
+    gap: 10px;
   }
+
+  .item-image-container {
+    width: 100%;
+    height: 100px;
+  }
+}
 }
