@@ -35,6 +35,10 @@ const el = {
   statsText: document.getElementById('statsText'),
   searchInput: document.getElementById('searchInput'),
   addBtn: document.getElementById('addBtn'),
+  categoryFilter: document.getElementById('categoryFilter'),
+  categoryList: document.getElementById('categoryList'),
+  categoryClear: document.getElementById('categoryClear'),
+  sortSelect: document.getElementById('sortSelect'),
   modal: document.getElementById('itemModal'),
   modalTitle: document.getElementById('modalTitle'),
   closeModalBtn: document.getElementById('closeModalBtn'),
@@ -54,6 +58,7 @@ init();
 async function init() {
   bindEvents();
   await loadFromGitHub();
+  populateCategoryFilter();
   await updatePermissionMode();
   applyFilter();
 }
@@ -71,6 +76,37 @@ function bindEvents() {
     state.query = event.target.value.trim().toLowerCase();
     applyFilter();
   });
+
+  // control limpiar categoría
+  function updateCategoryClearVisibility() {
+    if (!el.categoryFilter || !el.categoryClear) return;
+    const has = !!el.categoryFilter.value && el.categoryFilter.value.trim() !== '';
+    el.categoryClear.classList.toggle('hidden', !has);
+  }
+
+  if (el.categoryFilter) {
+    el.categoryFilter.addEventListener('input', function () {
+      applyFilter();
+      updateCategoryClearVisibility();
+    });
+  }
+
+  if (el.categoryClear) {
+    el.categoryClear.addEventListener('click', function () {
+      if (!el.categoryFilter) return;
+      el.categoryFilter.value = '';
+      el.categoryFilter.focus();
+      applyFilter();
+      updateCategoryClearVisibility();
+    });
+  }
+
+
+  if (el.sortSelect) {
+    el.sortSelect.addEventListener('change', function () {
+      applyFilter();
+    });
+  }
 
   el.itemForm.addEventListener('submit', async function (event) {
     event.preventDefault();
@@ -92,6 +128,9 @@ function bindEvents() {
 
   el.tokenBtn.classList.remove('hidden');
 
+  // inicializar visibilidad del clear de categoría
+  if (typeof updateCategoryClearVisibility === 'function') updateCategoryClearVisibility();
+
   el.tokenBtn.addEventListener('click', async function () {
     const current = state.token || '';
     const entered = window.prompt(
@@ -111,6 +150,26 @@ function bindEvents() {
 
     await updatePermissionMode();
     applyFilter();
+  });
+}
+
+// Actualiza clases en <body> para que el logo muestre estado (verde/rojo)
+function updateBodyPermissionClass() {
+  document.body.classList.toggle('can-edit', !!state.canEdit);
+  document.body.classList.toggle('read-only', !state.canEdit);
+}
+
+function populateCategoryFilter() {
+  if (!el.categoryFilter || !el.categoryList) return;
+
+  const categories = Array.from(new Set(state.items.map(i => (i.category || '').trim()).filter(Boolean))).sort();
+
+  // poblar datalist
+  el.categoryList.innerHTML = '';
+  categories.forEach(function (cat) {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    el.categoryList.appendChild(opt);
   });
 }
 
@@ -140,6 +199,7 @@ async function updatePermissionMode() {
 
   if (!state.token) {
     setReadOnlyUI(true);
+    updateBodyPermissionClass();
     return;
   }
 
@@ -153,8 +213,8 @@ async function updatePermissionMode() {
     console.error('No se pudo validar el token:', error);
     state.canEdit = false;
   }
-
   setReadOnlyUI(!state.canEdit);
+  updateBodyPermissionClass();
 }
 
 function setReadOnlyUI(readOnly) {
@@ -164,21 +224,40 @@ function setReadOnlyUI(readOnly) {
 }
 
 function applyFilter() {
-  const query = state.query;
+  const query = state.query || '';
 
-  if (!query) {
-    state.filteredItems = state.items.slice();
-  } else {
-    state.filteredItems = state.items.filter(function (item) {
-      const haystack = [
-        item.name || '',
-        item.category || '',
-        item.location || '',
-        item.notes || ''
-      ].join(' ').toLowerCase();
+  // inicial: copia completa
+  state.filteredItems = state.items.slice();
 
-      return haystack.indexOf(query) !== -1;
+  // búsqueda por texto -> SOLO por nombre
+  if (query) {
+    state.filteredItems = state.filteredItems.filter(function (item) {
+      return (item.name || '').toLowerCase().indexOf(query) !== -1;
     });
+  }
+
+  // filtro por categoría: input libre (coincidencia parcial, case-insensitive)
+  if (el.categoryFilter && el.categoryFilter.value && el.categoryFilter.value.trim() !== '') {
+    const catQuery = el.categoryFilter.value.trim().toLowerCase();
+    state.filteredItems = state.filteredItems.filter(function (item) {
+      return (item.category || '').toLowerCase().indexOf(catQuery) !== -1;
+    });
+  }
+
+  // orden
+  const sortVal = el.sortSelect ? el.sortSelect.value : 'newest';
+  if (sortVal === 'name-asc') {
+    state.filteredItems.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  } else if (sortVal === 'name-desc') {
+    state.filteredItems.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+  } else if (sortVal === 'category-asc') {
+    state.filteredItems.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+  } else if (sortVal === 'category-desc') {
+    state.filteredItems.sort((a, b) => (b.category || '').localeCompare(a.category || ''));
+  } else if (sortVal === 'location-asc') {
+    state.filteredItems.sort((a, b) => (a.location || '').localeCompare(b.location || ''));
+  } else if (sortVal === 'newest') {
+    // items are unshifted on add, so keep current order (newest first)
   }
 
   renderItems();
@@ -293,6 +372,7 @@ async function saveFromForm() {
   const ok = await pushToGitHub('Actualizar inventario');
 
   if (ok) {
+    populateCategoryFilter();
     applyFilter();
     closeModal();
   } else {
@@ -312,6 +392,7 @@ async function deleteItem(id) {
   const ok = await pushToGitHub('Eliminar objeto del inventario');
 
   if (ok) {
+    populateCategoryFilter();
     applyFilter();
   } else {
     await loadFromGitHub();
