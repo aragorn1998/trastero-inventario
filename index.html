@@ -42,7 +42,7 @@
       <input
         id="searchInput"
         type="search"
-        placeholder="Buscar por nombre, categoría, ubicación o notas..."
+        placeholder="Buscar por nombre..."
         autocomplete="off"
         spellcheck="false"
         aria-describedby="statsText syncBadge"
@@ -132,6 +132,17 @@
           Ubicación
           <input id="locationInput" name="location" required maxlength="120" />
         </label>
+
+        <label for="imageInput">
+          Imagen del producto
+          <input id="imageInput" name="imageInput" type="file" accept="image/*" capture="environment" />
+        </label>
+        <input type="hidden" id="imageData" name="imageData" />
+
+        <div id="imagePreviewWrapper" class="image-preview-wrapper hidden">
+          <img id="imagePreview" class="image-preview" alt="Vista previa de imagen del producto" />
+          <button id="clearImageBtn" type="button" class="clear-btn" aria-label="Eliminar imagen">✕</button>
+        </div>
 
         <label for="notesInput">
           Notas
