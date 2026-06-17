@@ -1,0 +1,16 @@
+[
+  {
+    "id": "item-demo-1",
+    "name": "Taladro",
+    "category": "Herramientas",
+    "location": "Estantería derecha - caja azul",
+    "notes": "Con brocas en una bolsa pequeña"
+  },
+  {
+    "id": "item-demo-2",
+    "name": "Decoración de Navidad",
+    "category": "Temporada",
+    "location": "Balda superior - caja roja",
+    "notes": "Incluye luces y bolas"
+  }
+]

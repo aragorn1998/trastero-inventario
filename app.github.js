@@ -1,0 +1,324 @@
+/*
+  app.github.js
+  ----------------
+  Esta versión usa la API de GitHub para leer y escribir inventario.json.
+
+  ANTES DE USARLA:
+  1) Sube todos los archivos al repositorio.
+  2) Edita OWNER, REPO y BRANCH con tus datos.
+  3) En index.html sustituye <script src="app.js"></script> por <script src="app.github.js"></script>
+
+  Funcionamiento:
+  - Sin token -> modo solo lectura.
+  - Con token -> se puede añadir, editar y eliminar.
+  - El token se guarda SOLO en el navegador del usuario.
+*/
+
+const OWNER = 'TU_USUARIO_GITHUB';
+const REPO = 'TU_REPOSITORIO';
+const BRANCH = 'main';
+const PATH = 'inventario.json';
+const TOKEN_STORAGE_KEY = 'trastero_github_token';
+
+const state = {
+  items: [],
+  filteredItems: [],
+  query: '',
+  sha: null,
+  token: localStorage.getItem(TOKEN_STORAGE_KEY) || '',
+  canEdit: false
+};
+
+const el = {
+  cardsContainer: document.getElementById('cardsContainer'),
+  emptyState: document.getElementById('emptyState'),
+  statsText: document.getElementById('statsText'),
+  searchInput: document.getElementById('searchInput'),
+  addBtn: document.getElementById('addBtn'),
+  modal: document.getElementById('itemModal'),
+  modalTitle: document.getElementById('modalTitle'),
+  closeModalBtn: document.getElementById('closeModalBtn'),
+  cancelBtn: document.getElementById('cancelBtn'),
+  itemForm: document.getElementById('itemForm'),
+  itemId: document.getElementById('itemId'),
+  nameInput: document.getElementById('nameInput'),
+  categoryInput: document.getElementById('categoryInput'),
+  locationInput: document.getElementById('locationInput'),
+  notesInput: document.getElementById('notesInput'),
+  tokenBtn: document.getElementById('tokenBtn'),
+  syncBadge: document.getElementById('syncBadge')
+};
+
+bootstrap();
+
+async function bootstrap() {
+  bindEvents();
+  await loadFromGitHub();
+  await updatePermissionMode();
+  applyFilter();
+}
+
+function bindEvents() {
+  el.addBtn.addEventListener('click', () => {
+    if (!state.canEdit) return;
+    openModal();
+  });
+
+  el.closeModalBtn.addEventListener('click', closeModal);
+  el.cancelBtn.addEventListener('click', closeModal);
+
+  el.searchInput.addEventListener('input', (event) => {
+    state.query = event.target.value.trim().toLowerCase();
+    applyFilter();
+  });
+
+  el.itemForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!state.canEdit) return;
+    await saveFromForm();
+  });
+
+  el.modal.addEventListener('click', (event) => {
+    if (event.target.dataset.close === 'true') closeModal();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !el.modal.classList.contains('hidden')) closeModal();
+  });
+
+  el.tokenBtn.classList.remove('hidden');
+  el.tokenBtn.addEventListener('click', async () => {
+    const current = state.token || '';
+    const entered = window.prompt('Pega aquí tu token personal de GitHub.
+
+Si borras el contenido, volverás a modo solo lectura.', current);
+    if (entered === null) return;
+
+    state.token = entered.trim();
+    if (state.token) {
+      localStorage.setItem(TOKEN_STORAGE_KEY, state.token);
+    } else {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
+
+    await updatePermissionMode();
+    applyFilter();
+  });
+}
+
+async function loadFromGitHub() {
+  try {
+    const response = await fetch(apiUrl(), {
+      headers: githubHeaders(false)
+    });
+    if (!response.ok) throw new Error('No se pudo leer inventario.json desde GitHub.');
+
+    const data = await response.json();
+    state.sha = data.sha;
+    const decoded = decodeBase64Utf8(data.content || '');
+    state.items = JSON.parse(decoded || '[]');
+  } catch (error) {
+    console.error(error);
+    window.alert('No se pudo cargar inventario.json. Revisa OWNER, REPO, BRANCH y que el repositorio sea público o accesible.');
+    state.items = [];
+  }
+}
+
+async function updatePermissionMode() {
+  state.canEdit = false;
+
+  if (!state.token) {
+    setReadOnlyUI(true);
+    return;
+  }
+
+  try {
+    const response = await fetch(apiUrl(), {
+      headers: githubHeaders(true)
+    });
+    state.canEdit = response.ok;
+  } catch (error) {
+    console.error('No se pudo validar el token.', error);
+    state.canEdit = false;
+  }
+
+  setReadOnlyUI(!state.canEdit);
+}
+
+function setReadOnlyUI(readOnly) {
+  el.syncBadge.classList.remove('hidden');
+  el.syncBadge.textContent = readOnly ? 'Solo lectura' : 'Edición activada';
+  el.syncBadge.style.color = readOnly ? '' : '#cffff1';
+  el.syncBadge.style.background = readOnly ? '' : 'rgba(61, 220, 151, 0.14)';
+  el.addBtn.classList.toggle('hidden', readOnly);
+}
+
+function applyFilter() {
+  const query = state.query;
+  if (!query) {
+    state.filteredItems = [...state.items];
+  } else {
+    state.filteredItems = state.items.filter((item) => {
+      const haystack = [item.name, item.category, item.location, item.notes]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }
+  renderItems();
+}
+
+function renderItems() {
+  el.cardsContainer.innerHTML = '';
+  el.statsText.textContent = `${state.filteredItems.length} objeto${state.filteredItems.length === 1 ? '' : 's'}`;
+  el.emptyState.classList.toggle('hidden', state.filteredItems.length !== 0);
+
+  state.filteredItems.forEach((item) => {
+    const article = document.createElement('article');
+    article.className = 'item-card';
+    article.innerHTML = `
+      <div class="item-header">
+        <div>
+          <h3 class="item-title"></h3>
+          <span class="item-category"></span>
+        </div>
+      </div>
+      <p class="item-location"></p>
+      <p class="item-notes"></p>
+      <div class="item-actions"></div>
+    `;
+
+    article.querySelector('.item-title').textContent = item.name;
+    article.querySelector('.item-category').textContent = item.category;
+    article.querySelector('.item-location').textContent = `📍 ${item.location}`;
+    article.querySelector('.item-notes').textContent = item.notes ? `📝 ${item.notes}` : '📝 Sin notas';
+
+    const actions = article.querySelector('.item-actions');
+    if (state.canEdit) {
+      const editBtn = document.createElement('button');
+      editBtn.className = 'mini-btn';
+      editBtn.textContent = '✏️ Editar';
+      editBtn.addEventListener('click', () => openModal(item));
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'mini-btn danger';
+      deleteBtn.textContent = '🗑️ Eliminar';
+      deleteBtn.addEventListener('click', () => deleteItem(item.id));
+
+      actions.append(editBtn, deleteBtn);
+    } else {
+      const info = document.createElement('span');
+      info.className = 'badge';
+      info.textContent = 'Lectura pública';
+      actions.appendChild(info);
+    }
+
+    el.cardsContainer.appendChild(article);
+  });
+}
+
+function openModal(item = null) {
+  el.itemForm.reset();
+  if (item) {
+    el.modalTitle.textContent = 'Editar objeto';
+    el.itemId.value = item.id;
+    el.nameInput.value = item.name;
+    el.categoryInput.value = item.category;
+    el.locationInput.value = item.location;
+    el.notesInput.value = item.notes || '';
+  } else {
+    el.modalTitle.textContent = 'Añadir objeto';
+    el.itemId.value = '';
+  }
+
+  el.modal.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+  setTimeout(() => el.nameInput.focus(), 20);
+}
+
+function closeModal() {
+  el.modal.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+}
+
+async function saveFromForm() {
+  const item = {
+    id: el.itemId.value || createId(),
+    name: el.nameInput.value.trim(),
+    category: el.categoryInput.value.trim(),
+    location: el.locationInput.value.trim(),
+    notes: el.notesInput.value.trim()
+  };
+
+  const existingIndex = state.items.findIndex((entry) => entry.id === item.id);
+  if (existingIndex >= 0) state.items[existingIndex] = item;
+  else state.items.unshift(item);
+
+  await pushToGitHub('Actualizar inventario');
+  applyFilter();
+  closeModal();
+}
+
+async function deleteItem(id) {
+  const confirmed = window.confirm('¿Seguro que quieres eliminar este objeto?');
+  if (!confirmed) return;
+
+  state.items = state.items.filter((item) => item.id !== id);
+  await pushToGitHub('Eliminar objeto del inventario');
+  applyFilter();
+}
+
+async function pushToGitHub(message) {
+  try {
+    const body = {
+      message,
+      branch: BRANCH,
+      sha: state.sha,
+      content: encodeBase64Utf8(JSON.stringify(state.items, null, 2))
+    };
+
+    const response = await fetch(apiUrl(), {
+      method: 'PUT',
+      headers: githubHeaders(true),
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const details = await response.text();
+      throw new Error(details || 'No se pudo guardar en GitHub.');
+    }
+
+    const result = await response.json();
+    state.sha = result.content.sha;
+  } catch (error) {
+    console.error(error);
+    window.alert('No se pudo guardar. Comprueba que el token tenga permisos de lectura y escritura sobre el contenido del repositorio.');
+    await loadFromGitHub();
+  }
+}
+
+function apiUrl() {
+  return `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}?ref=${encodeURIComponent(BRANCH)}`;
+}
+
+function githubHeaders(withAuth) {
+  const headers = {
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+  if (withAuth && state.token) headers.Authorization = `Bearer ${state.token}`;
+  return headers;
+}
+
+function createId() {
+  return `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function encodeBase64Utf8(text) {
+  return btoa(unescape(encodeURIComponent(text)));
+}
+
+function decodeBase64Utf8(base64Text) {
+  return decodeURIComponent(escape(atob(base64Text.replace(/
+/g, ''))));
+}
