@@ -1,15 +1,22 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
+
   <title>Inventario del Trastero</title>
+
+  <!-- Fuente -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="app-shell">
     <header class="topbar">
@@ -18,40 +25,55 @@
         <h1>Mi trastero</h1>
         <p class="subtitle">Busca, añade y organiza todo desde el móvil.</p>
       </div>
+
+      <!-- Botón token GitHub -->
       <div class="topbar-actions">
-        <button id="tokenBtn" class="icon-btn hidden" title="Configurar token GitHub" aria-label="Configurar token GitHub">🔑</button>
+        <button id="tokenBtn" class="icon-btn hidden" title="Configurar token GitHub">
+          🔑
+        </button>
       </div>
     </header>
 
+    <!-- Buscador -->
     <section class="toolbar card glass">
-      <label class="search-wrap" for="searchInput">
-        <span class="search-icon">🔎</span>
-        <input id="searchInput" type="search" placeholder="Buscar por nombre, categoría, ubicación o notas" autocomplete="off" />
+      <label class="search-wrap">
+        <span>🔎</span>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Buscar por nombre, categoría, ubicación o notas"
+        />
       </label>
+
       <div class="toolbar-meta">
         <span id="statsText">0 objetos</span>
         <span id="syncBadge" class="badge hidden">Solo lectura</span>
       </div>
     </section>
 
+    <!-- Tarjetas -->
     <main>
-      <section id="cardsContainer" class="cards" aria-live="polite"></section>
+      <section id="cardsContainer" class="cards"></section>
+
       <section id="emptyState" class="empty-state card hidden">
-        <div class="empty-emoji">📦</div>
+        <div>📦</div>
         <h2>No hay objetos todavía</h2>
-        <p>Añade el primero con el botón <strong>+</strong>.</p>
+        <p>Añade el primero con el botón +</p>
       </section>
     </main>
   </div>
 
-  <button id="addBtn" class="fab" aria-label="Añadir objeto">+</button>
+  <!-- Botón flotante -->
+  <button id="addBtn" class="fab">+</button>
 
-  <div id="itemModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <!-- Modal -->
+  <div id="itemModal" class="modal hidden">
     <div class="modal-backdrop" data-close="true"></div>
+
     <div class="modal-panel card">
       <div class="modal-header">
         <h2 id="modalTitle">Añadir objeto</h2>
-        <button id="closeModalBtn" class="icon-btn" aria-label="Cerrar">✕</button>
+        <button id="closeModalBtn">✕</button>
       </div>
 
       <form id="itemForm" class="form-grid">
@@ -59,36 +81,35 @@
 
         <label>
           <span>Nombre</span>
-          <input id="nameInput" type="text" maxlength="80" required placeholder="Ej. Taladro" />
+          <input id="nameInput" required />
         </label>
 
         <label>
           <span>Categoría</span>
-          <input id="categoryInput" type="text" maxlength="50" required placeholder="Ej. Herramientas" />
+          <input id="categoryInput" required />
         </label>
 
         <label>
           <span>Ubicación</span>
-          <input id="locationInput" type="text" maxlength="80" required placeholder="Ej. Estantería izquierda - caja 2" />
+          <input id="locationInput" required />
         </label>
 
         <label>
           <span>Notas</span>
-          <textarea id="notesInput" rows="4" maxlength="240" placeholder="Opcional"></textarea>
+          <textarea id="notesInput"></textarea>
         </label>
 
         <div class="form-actions">
-          <button type="button" id="cancelBtn" class="btn btn-secondary">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Guardar</button>
+          <button type="button" id="cancelBtn">Cancelar</button>
+          <button type="submit">Guardar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Versión por defecto: almacenamiento local -->
-  <script src="app.github.js"></script>
-  <!-- Si quieres la versión con GitHub, sustituye la línea anterior por:
-  <script src="app.github.js"></script>
-  -->
+  <!-- ✅ SCRIPT CORRECTO (IMPORTANTE) -->
+  <!-- ✅ Le añadimos ?v=3 para evitar caché -->
+  <script src="app.github.js?v=3"></script>
+
 </body>
 </html>
