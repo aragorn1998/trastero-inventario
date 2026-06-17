@@ -18,7 +18,7 @@ const OWNER = 'aragorn1998';
 const REPO = 'trastero-inventario';
 const BRANCH = 'main';
 const PATH = 'inventario.json';
-const TOKEN_STORAGE_KEY = 'trastero_github_token';
+const TOKEN_STORAGE_KEY = 'trastero_github_token'
 
 const state = {
   items: [],
@@ -49,9 +49,9 @@ const el = {
   syncBadge: document.getElementById('syncBadge')
 };
 
-bootstrap();
+init();
 
-async function bootstrap() {
+async function init() {
   bindEvents();
   await loadFromGitHub();
   await updatePermissionMode();
@@ -59,7 +59,7 @@ async function bootstrap() {
 }
 
 function bindEvents() {
-  el.addBtn.addEventListener('click', () => {
+  el.addBtn.addEventListener('click', function () {
     if (!state.canEdit) return;
     openModal();
   });
@@ -67,34 +67,42 @@ function bindEvents() {
   el.closeModalBtn.addEventListener('click', closeModal);
   el.cancelBtn.addEventListener('click', closeModal);
 
-  el.searchInput.addEventListener('input', (event) => {
+  el.searchInput.addEventListener('input', function (event) {
     state.query = event.target.value.trim().toLowerCase();
     applyFilter();
   });
 
-  el.itemForm.addEventListener('submit', async (event) => {
+  el.itemForm.addEventListener('submit', async function (event) {
     event.preventDefault();
     if (!state.canEdit) return;
     await saveFromForm();
   });
 
-  el.modal.addEventListener('click', (event) => {
-    if (event.target.dataset.close === 'true') closeModal();
+  el.modal.addEventListener('click', function (event) {
+    if (event.target && event.target.dataset.close === 'true') {
+      closeModal();
+    }
   });
 
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !el.modal.classList.contains('hidden')) closeModal();
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !el.modal.classList.contains('hidden')) {
+      closeModal();
+    }
   });
 
   el.tokenBtn.classList.remove('hidden');
-  el.tokenBtn.addEventListener('click', async () => {
-    const current = state.token || '';
-    const entered = window.prompt('Pega aquí tu token personal de GitHub.
 
-Si borras el contenido, volverás a modo solo lectura.', current);
+  el.tokenBtn.addEventListener('click', async function () {
+    const current = state.token || '';
+    const entered = window.prompt(
+      'Pega aqui tu token personal de GitHub.\n\nSi borras el contenido, volveras a modo solo lectura.',
+      current
+    );
+
     if (entered === null) return;
 
     state.token = entered.trim();
+
     if (state.token) {
       localStorage.setItem(TOKEN_STORAGE_KEY, state.token);
     } else {
@@ -111,15 +119,18 @@ async function loadFromGitHub() {
     const response = await fetch(apiUrl(), {
       headers: githubHeaders(false)
     });
-    if (!response.ok) throw new Error('No se pudo leer inventario.json desde GitHub.');
+
+    if (!response.ok) {
+      throw new Error('No se pudo leer inventario.json desde GitHub');
+    }
 
     const data = await response.json();
     state.sha = data.sha;
+
     const decoded = decodeBase64Utf8(data.content || '');
     state.items = JSON.parse(decoded || '[]');
   } catch (error) {
-    console.error(error);
-    window.alert('No se pudo cargar inventario.json. Revisa OWNER, REPO, BRANCH y que el repositorio sea público o accesible.');
+    console.error('Error al cargar inventario:', error);
     state.items = [];
   }
 }
@@ -136,9 +147,10 @@ async function updatePermissionMode() {
     const response = await fetch(apiUrl(), {
       headers: githubHeaders(true)
     });
+
     state.canEdit = response.ok;
   } catch (error) {
-    console.error('No se pudo validar el token.', error);
+    console.error('No se pudo validar el token:', error);
     state.canEdit = false;
   }
 
@@ -147,69 +159,83 @@ async function updatePermissionMode() {
 
 function setReadOnlyUI(readOnly) {
   el.syncBadge.classList.remove('hidden');
-  el.syncBadge.textContent = readOnly ? 'Solo lectura' : 'Edición activada';
-  el.syncBadge.style.color = readOnly ? '' : '#cffff1';
-  el.syncBadge.style.background = readOnly ? '' : 'rgba(61, 220, 151, 0.14)';
+  el.syncBadge.textContent = readOnly ? 'Solo lectura' : 'Edicion activada';
   el.addBtn.classList.toggle('hidden', readOnly);
 }
 
 function applyFilter() {
   const query = state.query;
+
   if (!query) {
-    state.filteredItems = [...state.items];
+    state.filteredItems = state.items.slice();
   } else {
-    state.filteredItems = state.items.filter((item) => {
-      const haystack = [item.name, item.category, item.location, item.notes]
-        .join(' ')
-        .toLowerCase();
-      return haystack.includes(query);
+    state.filteredItems = state.items.filter(function (item) {
+      const haystack = [
+        item.name || '',
+        item.category || '',
+        item.location || '',
+        item.notes || ''
+      ].join(' ').toLowerCase();
+
+      return haystack.indexOf(query) !== -1;
     });
   }
+
   renderItems();
 }
 
 function renderItems() {
   el.cardsContainer.innerHTML = '';
-  el.statsText.textContent = `${state.filteredItems.length} objeto${state.filteredItems.length === 1 ? '' : 's'}`;
+  el.statsText.textContent =
+    state.filteredItems.length +
+    ' objeto' +
+    (state.filteredItems.length === 1 ? '' : 's');
+
   el.emptyState.classList.toggle('hidden', state.filteredItems.length !== 0);
 
-  state.filteredItems.forEach((item) => {
+  state.filteredItems.forEach(function (item) {
     const article = document.createElement('article');
     article.className = 'item-card';
-    article.innerHTML = `
-      <div class="item-header">
-        <div>
-          <h3 class="item-title"></h3>
-          <span class="item-category"></span>
-        </div>
-      </div>
-      <p class="item-location"></p>
-      <p class="item-notes"></p>
-      <div class="item-actions"></div>
-    `;
 
-    article.querySelector('.item-title').textContent = item.name;
-    article.querySelector('.item-category').textContent = item.category;
-    article.querySelector('.item-location').textContent = `📍 ${item.location}`;
-    article.querySelector('.item-notes').textContent = item.notes ? `📝 ${item.notes}` : '📝 Sin notas';
+    article.innerHTML =
+      '<div class="item-header">' +
+        '<div>' +
+          '<h3 class="item-title"></h3>' +
+          '<span class="item-category"></span>' +
+        '</div>' +
+      '</div>' +
+      '<p class="item-location"></p>' +
+      '<p class="item-notes"></p>' +
+      '<div class="item-actions"></div>';
+
+    article.querySelector('.item-title').textContent = item.name || '';
+    article.querySelector('.item-category').textContent = item.category || '';
+    article.querySelector('.item-location').textContent = item.location || 'Sin ubicacion';
+    article.querySelector('.item-notes').textContent = item.notes || 'Sin notas';
 
     const actions = article.querySelector('.item-actions');
+
     if (state.canEdit) {
       const editBtn = document.createElement('button');
       editBtn.className = 'mini-btn';
-      editBtn.textContent = '✏️ Editar';
-      editBtn.addEventListener('click', () => openModal(item));
+      editBtn.textContent = 'Editar';
+      editBtn.addEventListener('click', function () {
+        openModal(item);
+      });
 
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'mini-btn danger';
-      deleteBtn.textContent = '🗑️ Eliminar';
-      deleteBtn.addEventListener('click', () => deleteItem(item.id));
+      deleteBtn.textContent = 'Eliminar';
+      deleteBtn.addEventListener('click', function () {
+        deleteItem(item.id);
+      });
 
-      actions.append(editBtn, deleteBtn);
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
     } else {
       const info = document.createElement('span');
       info.className = 'badge';
-      info.textContent = 'Lectura pública';
+      info.textContent = 'Lectura publica';
       actions.appendChild(info);
     }
 
@@ -217,23 +243,27 @@ function renderItems() {
   });
 }
 
-function openModal(item = null) {
+function openModal(item) {
   el.itemForm.reset();
+
   if (item) {
     el.modalTitle.textContent = 'Editar objeto';
-    el.itemId.value = item.id;
-    el.nameInput.value = item.name;
-    el.categoryInput.value = item.category;
-    el.locationInput.value = item.location;
+    el.itemId.value = item.id || '';
+    el.nameInput.value = item.name || '';
+    el.categoryInput.value = item.category || '';
+    el.locationInput.value = item.location || '';
     el.notesInput.value = item.notes || '';
   } else {
-    el.modalTitle.textContent = 'Añadir objeto';
+    el.modalTitle.textContent = 'Anadir objeto';
     el.itemId.value = '';
   }
 
   el.modal.classList.remove('hidden');
   document.body.classList.add('modal-open');
-  setTimeout(() => el.nameInput.focus(), 20);
+
+  setTimeout(function () {
+    el.nameInput.focus();
+  }, 20);
 }
 
 function closeModal() {
@@ -250,28 +280,49 @@ async function saveFromForm() {
     notes: el.notesInput.value.trim()
   };
 
-  const existingIndex = state.items.findIndex((entry) => entry.id === item.id);
-  if (existingIndex >= 0) state.items[existingIndex] = item;
-  else state.items.unshift(item);
+  const existingIndex = state.items.findIndex(function (entry) {
+    return entry.id === item.id;
+  });
 
-  await pushToGitHub('Actualizar inventario');
-  applyFilter();
-  closeModal();
+  if (existingIndex >= 0) {
+    state.items[existingIndex] = item;
+  } else {
+    state.items.unshift(item);
+  }
+
+  const ok = await pushToGitHub('Actualizar inventario');
+
+  if (ok) {
+    applyFilter();
+    closeModal();
+  } else {
+    await loadFromGitHub();
+    applyFilter();
+  }
 }
 
 async function deleteItem(id) {
-  const confirmed = window.confirm('¿Seguro que quieres eliminar este objeto?');
+  const confirmed = window.confirm('Seguro que quieres eliminar este objeto?');
   if (!confirmed) return;
 
-  state.items = state.items.filter((item) => item.id !== id);
-  await pushToGitHub('Eliminar objeto del inventario');
-  applyFilter();
+  state.items = state.items.filter(function (item) {
+    return item.id !== id;
+  });
+
+  const ok = await pushToGitHub('Eliminar objeto del inventario');
+
+  if (ok) {
+    applyFilter();
+  } else {
+    await loadFromGitHub();
+    applyFilter();
+  }
 }
 
 async function pushToGitHub(message) {
   try {
     const body = {
-      message,
+      message: message,
       branch: BRANCH,
       sha: state.sha,
       content: encodeBase64Utf8(JSON.stringify(state.items, null, 2))
@@ -285,20 +336,25 @@ async function pushToGitHub(message) {
 
     if (!response.ok) {
       const details = await response.text();
-      throw new Error(details || 'No se pudo guardar en GitHub.');
+      throw new Error(details || 'No se pudo guardar en GitHub');
     }
 
     const result = await response.json();
     state.sha = result.content.sha;
+    return true;
   } catch (error) {
-    console.error(error);
-    window.alert('No se pudo guardar. Comprueba que el token tenga permisos de lectura y escritura sobre el contenido del repositorio.');
-    await loadFromGitHub();
+    console.error('Error al guardar en GitHub:', error);
+    window.alert('No se pudo guardar en GitHub. Revisa el token y OWNER / REPO / BRANCH.');
+    return false;
   }
 }
 
 function apiUrl() {
-  return `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}?ref=${encodeURIComponent(BRANCH)}`;
+  return 'https://api.github.com/repos/' +
+    OWNER + '/' +
+    REPO + '/contents/' +
+    PATH + '?ref=' +
+    encodeURIComponent(BRANCH);
 }
 
 function githubHeaders(withAuth) {
@@ -306,12 +362,16 @@ function githubHeaders(withAuth) {
     'Accept': 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28'
   };
-  if (withAuth && state.token) headers.Authorization = `Bearer ${state.token}`;
+
+  if (withAuth && state.token) {
+    headers.Authorization = 'Bearer ' + state.token;
+  }
+
   return headers;
 }
 
 function createId() {
-  return `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  return 'item-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
 }
 
 function encodeBase64Utf8(text) {
@@ -319,6 +379,5 @@ function encodeBase64Utf8(text) {
 }
 
 function decodeBase64Utf8(base64Text) {
-  return decodeURIComponent(escape(atob(base64Text.replace(/
-/g, ''))));
+  return decodeURIComponent(escape(atob(base64Text.replace(/\n/g, ''))));
 }
