@@ -14,8 +14,8 @@
   - El token se guarda SOLO en el navegador del usuario.
 */
 
-const OWNER = 'TU_USUARIO_GITHUB';
-const REPO = 'TU_REPOSITORIO';
+const OWNER = 'aragorn1998';
+const REPO = 'trastero-inventario';
 const BRANCH = 'main';
 const PATH = 'inventario.json';
 const TOKEN_STORAGE_KEY = 'trastero_github_token';
