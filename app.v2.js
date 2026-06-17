@@ -1,12 +1,23 @@
 import { db } from './db.js';
-
+console.log("APP ARRANCANDO");
 const API_URL = 'https://api.github.com/repos/aragorn1998/trastero-inventario/contents/inventario.json';
 
 let items = [];
 
 // INIT
 init();
+async function init() {
+  console.log("INIT");
 
+  try {
+    await loadData();
+    console.log("DATA CARGADA:", state.items);
+  } catch (err) {
+    console.error("ERROR EN INIT:", err);
+  }
+
+  applyFilter();
+}
 async function init() {
   registerServiceWorker();
   await loadLocal();
@@ -14,8 +25,15 @@ async function init() {
   setupEvents();
 }
 
-async function loadLocal() {
-  items = await db.getAll('items');
+
+async function loadData() {
+  const items = await getAllItemsFromDB();
+
+  if (!items || !Array.isArray(items)) {
+    state.items = [];
+  } else {
+    state.items = items;
+  }
 }
 
 function setupEvents() {
