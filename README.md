@@ -1,0 +1,1 @@
+# trastero-inventario
