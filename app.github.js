@@ -49,6 +49,11 @@ const el = {
   categoryInput: document.getElementById('categoryInput'),
   locationInput: document.getElementById('locationInput'),
   notesInput: document.getElementById('notesInput'),
+  imageInput: document.getElementById('imageInput'),
+  imageData: document.getElementById('imageData'),
+  imagePreviewWrapper: document.getElementById('imagePreviewWrapper'),
+  imagePreview: document.getElementById('imagePreview'),
+  clearImageBtn: document.getElementById('clearImageBtn'),
   tokenBtn: document.getElementById('tokenBtn'),
   syncBadge: document.getElementById('syncBadge')
 };
@@ -105,6 +110,32 @@ function bindEvents() {
   if (el.sortSelect) {
     el.sortSelect.addEventListener('change', function () {
       applyFilter();
+    });
+  }
+
+  if (el.imageInput) {
+    el.imageInput.addEventListener('change', function (event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        clearImagePreview();
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        el.imageData.value = reader.result || '';
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (el.clearImageBtn) {
+    el.clearImageBtn.addEventListener('click', function () {
+      clearImagePreview();
+      if (el.imageInput) {
+        el.imageInput.value = '';
+      }
     });
   }
 
@@ -283,6 +314,7 @@ function renderItems() {
           '<span class="item-category"></span>' +
         '</div>' +
       '</div>' +
+      (item.imageData ? '<div class="item-image-container"><img class="item-image" src="' + item.imageData + '" alt="Imagen de ' + escapeHtml(item.name || 'objeto') + '" /></div>' : '') +
       '<p class="item-location"></p>' +
       '<p class="item-notes"></p>' +
       '<div class="item-actions"></div>';
@@ -332,9 +364,27 @@ function openModal(item) {
     el.categoryInput.value = item.category || '';
     el.locationInput.value = item.location || '';
     el.notesInput.value = item.notes || '';
+    if (item.imageData) {
+      el.imageData.value = item.imageData;
+      setImagePreview(item.imageData);
+    } else {
+      clearImagePreview();
+    }
+    if (el.imageInput) {
+      el.imageInput.value = '';
+    }
   } else {
     el.modalTitle.textContent = 'Anadir objeto';
     el.itemId.value = '';
+    el.nameInput.value = '';
+    el.categoryInput.value = '';
+    el.locationInput.value = '';
+    el.notesInput.value = '';
+    el.imageData.value = '';
+    clearImagePreview();
+    if (el.imageInput) {
+      el.imageInput.value = '';
+    }
   }
 
   el.modal.classList.remove('hidden');
@@ -356,7 +406,8 @@ async function saveFromForm() {
     name: el.nameInput.value.trim(),
     category: el.categoryInput.value.trim(),
     location: el.locationInput.value.trim(),
-    notes: el.notesInput.value.trim()
+    notes: el.notesInput.value.trim(),
+    imageData: el.imageData ? el.imageData.value.trim() : ''
   };
 
   const existingIndex = state.items.findIndex(function (entry) {
@@ -428,6 +479,32 @@ async function pushToGitHub(message) {
     window.alert('No se pudo guardar en GitHub. Revisa el token y OWNER / REPO / BRANCH.');
     return false;
   }
+}
+
+function setImagePreview(src) {
+  if (!el.imagePreviewWrapper || !el.imagePreview) return;
+  if (!src) {
+    clearImagePreview();
+    return;
+  }
+  el.imagePreview.src = src;
+  el.imagePreviewWrapper.classList.remove('hidden');
+}
+
+function clearImagePreview() {
+  if (!el.imagePreviewWrapper || !el.imagePreview || !el.imageData) return;
+  el.imagePreview.src = '';
+  el.imageData.value = '';
+  el.imagePreviewWrapper.classList.add('hidden');
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function apiUrl() {
