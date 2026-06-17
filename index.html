@@ -5,6 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
+  <link rel="manifest" href="manifest.json">
+
 
   <title>Inventario del Trastero</title>
 
@@ -49,6 +51,7 @@
         <span id="statsText">0 objetos</span>
         <span id="syncBadge" class="badge hidden">Solo lectura</span>
       </div>
+      <button id="syncBtn">🔄 Sync</button>
     </section>
 
     <!-- Tarjetas -->
@@ -109,7 +112,8 @@
 
   <!-- ✅ SCRIPT CORRECTO (IMPORTANTE) -->
   <!-- ✅ Le añadimos ?v=3 para evitar caché -->
-  <script src="app.github.js?v=3"></script>
+  <!--<script src="app.github.js?v=3"></script> -->
+  <script src="app.v2.js"></script>
 
 </body>
 </html>
