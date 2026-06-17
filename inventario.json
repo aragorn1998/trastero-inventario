@@ -1,5 +1,12 @@
 [
   {
+    "id": "item-1781706646457-087jcfo",
+    "name": "CAs",
+    "category": "Zapato",
+    "location": "Estantería izquierda",
+    "notes": "No sé qué decir"
+  },
+  {
     "id": "item-demo-1",
     "name": "Taladro",
     "category": "Herramientas",
