@@ -2,80 +2,143 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Inventario del trastero con sincronización en GitHub" />
+  <meta name="theme-color" content="#1f2937" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Inventario del Trastero</title>
 
   <!-- Estilos -->
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+  <a href="#mainContent" class="skip-link">Saltar al contenido</a>
 
-  <!-- HEADER -->
-  <header>
-    <h1>📦 Inventario del Trastero</h1>
+  <header class="page-header">
+    <div class="header-main">
+      <!-- logo eliminado: usamos el botón de token como indicador coloreado -->
+      <h1>📦 Inventario del Trastero</h1>
+      <p class="subtitle">Consulta, busca y actualiza tus objetos guardados.</p>
+    </div>
 
     <div class="header-actions">
-      <button id="tokenBtn" class="hidden">🔑</button>
+      <button
+        id="tokenBtn"
+        class="hidden"
+        type="button"
+        title="Configurar token de GitHub"
+        aria-label="Configurar token de GitHub"
+      >
+        
+      </button>
     </div>
   </header>
 
-  <!-- BUSCADOR -->
-  <section>
-    <input
-      id="searchInput"
-      type="text"
-      placeholder="Buscar..."
-    />
+  <section class="toolbar" aria-label="Herramientas de búsqueda y estado">
+    <label class="search-group" for="searchInput">
+      <span class="sr-only">Buscar en el inventario</span>
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Buscar por nombre, categoría, ubicación o notas..."
+        autocomplete="off"
+        spellcheck="false"
+        aria-describedby="statsText syncBadge"
+      />
+    </label>
 
-    <div>
+    <div class="toolbar-controls">
+      <label class="visually-hidden" for="categoryFilter">Filtrar por categoría</label>
+      <input id="categoryFilter" list="categoryList" placeholder="Filtrar por categoría (escribe para buscar)" aria-label="Filtrar por categoría" />
+      <button id="categoryClear" class="clear-btn" aria-label="Limpiar filtro de categoría">✕</button>
+      <datalist id="categoryList"></datalist>
+
+      <label class="visually-hidden" for="sortSelect">Ordenar</label>
+      <select id="sortSelect" aria-label="Ordenar">
+        <option value="newest">Más recientes</option>
+        <option value="name-asc">Nombre A→Z</option>
+        <option value="name-desc">Nombre Z→A</option>
+        <option value="category-asc">Categoría A→Z</option>
+        <option value="category-desc">Categoría Z→A</option>
+        <option value="location-asc">Ubicación A→Z</option>
+      </select>
+    </div>
+
+    <div class="status-row" role="status" aria-live="polite">
       <span id="statsText">0 objetos</span>
       <span id="syncBadge">Solo lectura</span>
     </div>
   </section>
 
-  <!-- LISTADO -->
-  <main>
-    <div id="cardsContainer"></div>
+  <main id="mainContent">
+    <section aria-label="Listado de objetos">
+      <div id="cardsContainer"></div>
 
-    <div id="emptyState" class="hidden">
-      <p>No hay objetos todavía</p>
-      <p>Añade el primero con el botón +</p>
-    </div>
+      <div id="emptyState" class="hidden" role="status" aria-live="polite">
+        <p>No hay objetos todavía.</p>
+        <p>Añade el primero con el botón +.</p>
+      </div>
+    </section>
   </main>
 
-  <!-- BOTÓN AÑADIR -->
-  <button id="addBtn">+</button>
+  <button
+    id="addBtn"
+    type="button"
+    aria-label="Añadir objeto"
+    title="Añadir objeto"
+  >
+    +
+  </button>
 
-  <!-- MODAL -->
-  <div id="itemModal" class="hidden">
-    <div>
-      <h2 id="modalTitle">Añadir objeto</h2>
+  <!-- Modal -->
+  <div
+    id="itemModal"
+    class="hidden"
+    data-close="true"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+  >
+    <div class="modal-card" role="document">
+      <div class="modal-header">
+        <h2 id="modalTitle">Añadir objeto</h2>
+        <button
+          id="closeModalBtn"
+          type="button"
+          class="icon-btn"
+          aria-label="Cerrar ventana"
+          title="Cerrar"
+        >
+          ✕
+        </button>
+      </div>
 
-      <form id="itemForm">
+      <form id="itemForm" novalidate>
         <input type="hidden" id="itemId" />
 
-        <label>
+        <label for="nameInput">
           Nombre
-          <input id="nameInput" required />
+          <input id="nameInput" name="name" required maxlength="120" />
         </label>
 
-        <label>
+        <label for="categoryInput">
           Categoría
-          <input id="categoryInput" required />
+          <input id="categoryInput" name="category" required maxlength="80" />
         </label>
 
-        <label>
+        <label for="locationInput">
           Ubicación
-          <input id="locationInput" required />
+          <input id="locationInput" name="location" required maxlength="120" />
         </label>
 
-        <label>
+        <label for="notesInput">
           Notas
-          <textarea id="notesInput"></textarea>
+          <textarea id="notesInput" name="notes" rows="4" maxlength="1000"></textarea>
         </label>
 
-        <div>
+        <div class="form-actions">
           <button type="button" id="cancelBtn">Cancelar</button>
           <button type="submit">Guardar</button>
         </div>
@@ -83,8 +146,13 @@
     </div>
   </div>
 
-  <!-- ✅ SCRIPT CORRECTO -->
-  <script src="app.github.js?v=4"></script>
+  <noscript>
+    <div class="noscript-warning">
+      Esta app necesita JavaScript para funcionar correctamente.
+    </div>
+  </noscript>
 
+  <!-- Script principal -->
+  <script src="app.github.js?v=5"></script>
 </body>
 </html>
