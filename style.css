@@ -1,10 +1,10 @@
 :root {
   --bg: #0b1220;
-  --bg-soft: #111a2b;
-  --card: rgba(17, 26, 43, 0.95);
+  --bg-soft: #0f1724;
+  --card: rgba(17, 26, 43, 0.98);
   --card-border: rgba(255, 255, 255, 0.08);
   --text: #e5edf7;
-  --muted: #9eb0c8;
+  --muted: #c8d8ea;
   --primary: #6ea8fe;
   --primary-strong: #4d8dff;
   --danger: #ff6b6b;
@@ -124,7 +124,7 @@ button {
 .search-wrap input::placeholder,
 textarea::placeholder,
 input::placeholder {
-  color: #7c8ea6;
+  color: #9fb6d0;
 }
 
 .toolbar-meta {
@@ -149,15 +149,69 @@ input::placeholder {
 
 .cards {
   display: grid;
-  gap: 12px;
+  gap: 16px;
 }
 
 .item-card {
-  padding: 16px;
-  border-radius: 22px;
+  padding: 12px;
+  border-radius: 18px;
   background: linear-gradient(180deg, rgba(22, 33, 54, 0.98), rgba(15, 24, 39, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: var(--shadow);
+  display: flex;
+  gap: 12px;
+}
+
+.item-image-container {
+  overflow: hidden;
+  border-radius: 12px;
+  width: 70px;
+  height: 70px;
+  background: rgba(255,255,255,0.04);
+  flex-shrink: 0;
+}
+
+.item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.image-preview-wrapper {
+  position: relative;
+  margin: 12px 0 0;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: rgba(255,255,255,0.04);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.image-preview-wrapper img.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+#clearImageBtn {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 2;
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
 }
 
 .item-header {
@@ -169,26 +223,28 @@ input::placeholder {
 
 .item-title {
   margin: 0;
-  font-size: 1.06rem;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .item-category {
   display: inline-flex;
-  margin-top: 8px;
-  padding: 6px 10px;
+  margin-top: 4px;
+  padding: 4px 8px;
   border-radius: 999px;
   background: rgba(110, 168, 254, 0.14);
   color: #d8e7ff;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
 }
 
 .item-location,
 .item-notes {
-  margin: 14px 0 0;
+  margin: 0;
   color: var(--muted);
-  line-height: 1.45;
+  line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-word;
+  font-size: 0.92rem;
 }
 
 .item-actions {
@@ -262,6 +318,18 @@ input::placeholder {
   padding: 16px;
 }
 
+.modal-card {
+  position: relative;
+  width: min(100%, 720px);
+  max-height: min(90vh, 820px);
+  overflow: auto;
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(6, 17, 29, 0.96);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.4);
+}
+
 .modal-backdrop {
   position: absolute;
   inset: 0;
@@ -293,9 +361,7 @@ input::placeholder {
 
 .form-grid {
   display: grid;
-  gap: 14px;
-}
-
+    gap: 16px;
 .form-grid label {
   display: grid;
   gap: 8px;
@@ -354,4 +420,245 @@ body.modal-open {
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/* Ajustes específicos para index_mejorado.html */
+/* Centrar la cabecera, toolbar y el contenido principal */
+.page-header,
+.toolbar,
+main#mainContent {
+  max-width: 920px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 12px 16px;
+}
+
+#cardsContainer {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  padding: 8px 16px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 20px;
+  padding-bottom: 12px;
+}
+
+.header-main h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 4vw, 2rem);
+}
+
+/* Quitar posibles recuadros blancos alrededor de logos/imagenes en el header */
+.page-header img,
+.header-main img {
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.logo-wrap {
+  display: inline-flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.logo-wrap svg {
+  width: 48px;
+  height: 48px;
+}
+
+.toolbar-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+select {
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+/* Ajustes para que los desplegables no aparezcan blancos al abrirse */
+select, input[list], input[type="file"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: rgba(255,255,255,0.03);
+  color: var(--text);
+}
+
+/* Intento de estilo para opciones (limitado por navegadores) */
+option {
+  background: var(--bg-soft);
+  color: var(--text);
+}
+
+/* Estilo del input que actúa como filtro de categoría */
+#categoryFilter {
+  min-width: 180px;
+  max-width: 320px;
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+/* Logo: fondo cambia según modo */
+body.read-only .logo-bg { fill: #ff6b6b; }
+body.can-edit .logo-bg { fill: #3ddc97; }
+
+/* Token button as colored square indicator */
+#tokenBtn {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  display: inline-grid;
+  place-items: center;
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+body.can-edit #tokenBtn {
+  background: linear-gradient(180deg, #40e39a, #3ddc97);
+}
+
+body.read-only #tokenBtn {
+  background: linear-gradient(180deg, #ff9797, #ff6b6b);
+}
+
+/* Clear button for inputs */
+.clear-btn {
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  border: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.clear-btn.hidden {
+  display: none !important;
+}
+
+.toolbar-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Mejora de foco para selects/inputs */
+select:focus, #categoryFilter:focus, input[type="file"]:focus, textarea:focus {
+  outline: none;
+  border-color: rgba(110,168,254,0.85);
+  box-shadow: 0 0 0 4px rgba(110,168,254,0.08);
+}
+
+.form-grid {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 720px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .form-grid label,
+  .image-field,
+  .notes-field {
+    grid-column: span 2;
+  }
+
+  .form-grid label.half-field {
+    grid-column: span 1;
+  }
+}
+
+.image-field {
+  display: grid;
+  gap: 10px;
+}
+
+.image-field-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.image-field input[type="file"] {
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.image-field .field-help {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.image-field-header .field-help {
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+/* Toolbar más clara y centrada */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+/* Estilo para el botón añadir (si no tiene clase .fab) */
+#addBtn {
+  position: fixed;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--primary), var(--primary-strong));
+  color: #06111d;
+  font-size: 2rem;
+  font-weight: 600;
+  box-shadow: 0 18px 34px rgba(77, 141, 255, 0.35);
+  display: grid;
+  place-items: center;
+  border: 0;
+}
+
+@media (max-width: 520px) {
+  .item-card {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .item-image-container {
+    width: 100%;
+    height: 100px;
+  }
+}
 }
