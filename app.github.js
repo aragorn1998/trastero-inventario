@@ -16,7 +16,7 @@
 
 const OWNER = 'aragorn1998';
 const REPO = 'trastero-inventario';
-const BRANCH = 'main';
+const BRANCH = 'Imagenes';
 const PATH = 'inventario.json';
 const TOKEN_STORAGE_KEY = 'trastero_github_token'
 
