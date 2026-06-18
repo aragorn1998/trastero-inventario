@@ -14,10 +14,12 @@
   - El token se guarda SOLO en el navegador del usuario.
 */
 
+
 const OWNER = 'aragorn1998';
 const REPO = 'trastero-inventario';
 const BRANCH = 'Imagenes';
-const PATH = 'Imagenes/inventario.json';
+const PATH = 'inventario.json';
+
 const TOKEN_STORAGE_KEY = 'trastero_github_token'
 
 const state = {
